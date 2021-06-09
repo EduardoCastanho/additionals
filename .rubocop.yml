@@ -6,7 +6,7 @@ Rails:
   Enabled: true
 
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.5
   TargetRailsVersion: 5.2
   NewCops: enable
 
@@ -16,11 +16,18 @@ Metrics/AbcSize:
 Metrics/BlockLength:
   Enabled: false
 
+Metrics/ParameterLists:
+  Enabled: true
+  CountKeywordArgs: false
+
 Metrics/ClassLength:
   Enabled: false
 
 Metrics/CyclomaticComplexity:
   Max: 25
+
+Style/HashConversion:
+  Enabled: true
 
 Layout/LineLength:
   Max: 140
@@ -55,21 +62,53 @@ Performance/ChainArrayAllocation:
 Style/AutoResourceCleanup:
   Enabled: true
 
+Style/ExpandPathArguments:
+  Enabled: true
+  Exclude:
+    - additionals.gemspec
+    - test/**/*
+
 Style/FrozenStringLiteralComment:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - '/**/*.rsb'
+
+Style/OptionHash:
+  Enabled: true
+  SuspiciousParamNames:
+    - options
+    - api_options
+    - opts
+    - args
+    - params
+    - parameters
+    - settings
+  Exclude:
+    - lib/additionals/patches/*.rb
+
+Style/ReturnNil:
+  Enabled: true
+
+Style/UnlessLogicalOperators:
+  Enabled: true
+
+Style/MethodCallWithArgsParentheses:
+  Enabled: true
+  AllowParenthesesInMultilineCall: true
+  AllowParenthesesInChaining: true
+  EnforcedStyle: omit_parentheses
 
 Style/Documentation:
-  Enabled: false
-
-# required for travis/ci (symbolic links problem)
-Style/ExpandPathArguments:
-  Enabled: false
-
-Style/HashTransformKeys:
   Enabled: false
 
 Style/HashTransformValues:
   Enabled: false
 
 Naming/VariableNumber:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - 'test/**/*'
+
+Style/StringConcatenation:
+  Exclude:
+    - 'app/views/additionals/_select2_ajax_call.*'

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'open-uri'
 
 class DashboardAsyncBlocksController < ApplicationController
@@ -6,7 +8,6 @@ class DashboardAsyncBlocksController < ApplicationController
 
   helper :additionals_routes
   helper :additionals_queries
-  helper :additionals_tag
   helper :queries
   helper :issues
   helper :activities
@@ -85,13 +86,13 @@ class DashboardAsyncBlocksController < ApplicationController
     rescue ActiveRecord::RecordNotFound
       render_404
     end
-    deny_access unless User.current.allowed_to?(:view_project, @project)
+    deny_access unless User.current.allowed_to? :view_project, @project
 
     @project
   end
 
   def dashboard_with_invalid_block(exception)
-    logger&.error "Invalid dashboard block for #{@block}: #{exception.message}"
+    logger&.error "Invalid dashboard block for #{@block} (#{exception.class.name}): #{exception.message}"
     respond_to do |format|
       format.html do
         render template: 'dashboards/block_error', layout: false

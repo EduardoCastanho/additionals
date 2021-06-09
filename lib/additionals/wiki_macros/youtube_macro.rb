@@ -1,4 +1,5 @@
-# Youtube wiki macros
+# frozen_string_literal: true
+
 module Additionals
   module WikiMacros
     Redmine::WikiFormatting::Macros.register do
@@ -17,16 +18,11 @@ module Additionals
       DESCRIPTION
 
       macro :youtube do |_obj, args|
-        args, options = extract_macro_options(args, :width, :height, :autoplay)
+        args, options = extract_macro_options args, :width, :height, :autoplay
 
         width = options[:width].presence || 640
         height = options[:height].presence || 360
-
-        autoplay = if !options[:autoplay].nil? && Additionals.true?(options[:autoplay])
-                     true
-                   else
-                     false
-                   end
+        autoplay = !options[:autoplay].nil? && Additionals.true?(options[:autoplay])
 
         raise 'The correct usage is {{youtube(<video key>[, width=x, height=y])}}' if args.empty?
 

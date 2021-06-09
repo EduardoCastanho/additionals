@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DashboardContent
   include Redmine::I18n
 
@@ -67,11 +69,10 @@ class DashboardContent
   def available_blocks
     return @available_blocks if defined? @available_blocks
 
-    available_blocks = begin block_definitions.reject do |_block_name, block_specs|
-                               block_specs.key?(:permission) && !user.allowed_to?(block_specs[:permission], project, global: true) ||
-                                 block_specs.key?(:admin_only) && block_specs[:admin_only] && !user.admin? ||
-                                 block_specs.key?(:if) && !block_specs[:if].call(project)
-                             end
+    available_blocks = block_definitions.reject do |_block_name, block_specs|
+      block_specs.key?(:permission) && !user.allowed_to?(block_specs[:permission], project, global: true) ||
+        block_specs.key?(:admin_only) && block_specs[:admin_only] && !user.admin? ||
+        block_specs.key?(:if) && !block_specs[:if].call(project)
     end
 
     @available_blocks = available_blocks.sort_by { |_k, v| v[:label] }.to_h
@@ -101,7 +102,7 @@ class DashboardContent
 
   def find_block(block)
     block.to_s =~  /\A(.*?)(__\d+)?\z/
-    name = Regexp.last_match(1)
+    name = Regexp.last_match 1
     available_blocks.key?(name) ? available_blocks[name].merge(name: name) : nil
   end
 

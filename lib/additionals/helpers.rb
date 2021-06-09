@@ -1,16 +1,34 @@
+# frozen_string_literal: true
+
 module Additionals
   module Helpers
-    def additionals_list_title(options)
+    def live_search_title_info(entity)
+      fields = "LiveSearch::#{entity.to_s.classify}".constantize.info_fields
+      all_fields = fields.map { |f| "#{f}:term" }.join ', '
+      l :label_live_search_hints, value: all_fields
+    end
+
+    def link_to_external(name, link, **options)
+      options[:class] ||= 'external'
+      options[:class] = "#{options[:class]} external" if options[:class].exclude? 'external'
+
+      options[:rel] ||= 'noopener'
+      options[:target] ||= '_blank'
+
+      link_to name, link, options
+    end
+
+    def additionals_list_title(name: nil, issue: nil, user: nil, query: nil)
       title = []
-      if options[:issue]
-        title << link_to(h("#{options[:issue].subject} ##{options[:issue].id}"),
-                         issue_path(options[:issue]),
-                         class: options[:issue].css_classes)
-      elsif options[:user]
-        title << safe_join([avatar(options[:user], size: 50), options[:user].name], ' ')
+      if issue
+        title << link_to(h("#{issue.subject} ##{issue.id}"),
+                         issue_path(issue),
+                         class: issue.css_classes)
+      elsif user
+        title << safe_join([avatar(user, size: 50), user.name], ' ')
       end
-      title << options[:name] if options[:name]
-      title << h(options[:query].name) if options[:query] && !options[:query].new_record?
+      title << name if name
+      title << h(query.name) if query && !query.new_record?
       safe_join title, Additionals::LIST_SEPARATOR
     end
 
@@ -37,7 +55,7 @@ module Additionals
 
     def render_issue_macro_link(issue, text, comment_id = nil)
       only_path = controller_path.split('_').last != 'mailer'
-      content = link_to(text, issue_url(issue, only_path: only_path), class: issue.css_classes)
+      content = link_to text, issue_url(issue, only_path: only_path), class: issue.css_classes
       if comment_id.nil?
         content
       else
@@ -60,7 +78,7 @@ module Additionals
         comment = 'N/A'
         comment_link = comment_id
       else
-        comment_link = link_to(comment_id, issue_url(issue, only_path: only_path, anchor: "note-#{comment_id}"))
+        comment_link = link_to comment_id, issue_url(issue, only_path: only_path, anchor: "note-#{comment_id}")
       end
 
       tag.div class: 'issue-macro box' do
@@ -89,14 +107,14 @@ module Additionals
       # if more than one projects available, we do not use project url for a new issue
       if project_count > 1
         if permission == :edit_issues
-          new_issue_path('issue[assigned_to_id]' => user.id, 'issue[project_id]' => project_id)
+          new_issue_path 'issue[assigned_to_id]' => user.id, 'issue[project_id]' => project_id
         else
-          new_issue_path('issue[project_id]' => project_id)
+          new_issue_path 'issue[project_id]' => project_id
         end
       elsif permission == :edit_issues
-        new_project_issue_path(project_id, 'issue[assigned_to_id]' => user.id)
+        new_project_issue_path project_id, 'issue[assigned_to_id]' => user.id
       else
-        new_project_issue_path(project_id)
+        new_project_issue_path project_id
       end
     end
 
@@ -109,23 +127,18 @@ module Additionals
         return rc
       end
 
-      uri = URI.parse(url)
+      uri = URI.parse url
       # support issue_id plugin
       # see https://www.redmine.org/plugins/issue_id
-      issue_id_parts = url.split('-')
+      issue_id_parts = url.split '-'
       if uri.scheme.nil? && uri.path[0] != '/' && issue_id_parts.count == 2
         rc[:issue_id] = url
       else
-        if request.nil?
-          # this is used by mailer
-          return rc if url.exclude?(Setting.host_name)
-        elsif uri.host != URI.parse(request.original_url).host
-          return rc
-        end
+        s_pos = uri.path.rindex '/issues/'
+        return rc unless s_pos
 
-        s_pos = uri.path.rindex('/issues/')
         id_string = uri.path[s_pos + 8..-1]
-        e_pos = id_string.index('/')
+        e_pos = id_string.index '/'
         rc[:issue_id] = e_pos.nil? ? id_string : id_string[0..e_pos - 1]
         # check for comment_id
         rc[:comment_id] = uri.fragment[5..-1].to_i if comment_id.nil? && uri.fragment.present? && uri.fragment[0..4] == 'note-'
@@ -142,55 +155,10 @@ module Additionals
       safe_join s
     end
 
-    def system_uptime
-      if windows_platform?
-        `net stats srv | find "Statist"`
-      elsif File.exist?('/proc/uptime')
-        secs = `cat /proc/uptime`.to_i
-        min = 0
-        hours = 0
-        days = 0
-        if secs.positive?
-          min = (secs / 60).round
-          hours = (secs / 3_600).round
-          days = (secs / 86_400).round
-        end
-        if days >= 1
-          "#{days} #{l(:days, count: days)}"
-        elsif hours >= 1
-          "#{hours} #{l(:hours, count: hours)}"
-        else
-          "#{min} #{l(:minutes, count: min)}"
-        end
-      else
-        # this should be mac os
-        seconds = `sysctl -n kern.boottime | awk '{print $4}'`.tr(',', '')
-        so = DateTime.strptime(seconds.strip, '%s')
-        if so.present?
-          time_tag(so)
-        else
-          days = `uptime | awk '{print $3}'`.to_i.round
-          "#{days} #{l(:days, count: days)}"
-        end
-      end
-    end
-
-    def system_info
-      if windows_platform?
-        'unknown'
-      else
-        `uname -a`
-      end
-    end
-
-    def windows_platform?
-      true if /cygwin|mswin|mingw|bccwin|wince|emx/.match?(RUBY_PLATFORM)
-    end
-
-    def autocomplete_select_entries(name, type, option_tags, options = {})
+    def autocomplete_select_entries(name, type, option_tags, **options)
       unless option_tags.is_a?(String) || option_tags.blank?
         # if option_tags is not an array, it should be an object
-        option_tags = options_for_select([[option_tags.try(:name), option_tags.try(:id)]], option_tags.try(:id))
+        option_tags = options_for_select [[option_tags.try(:name), option_tags.try(:id)]], option_tags.try(:id)
       end
       options[:project] = @project if @project && options[:project].blank?
 
@@ -202,7 +170,7 @@ module Additionals
                       multiple: options[:multiple],
                       disabled: options[:disabled])
       s << render(layout: false,
-                  partial: 'additionals/select2_ajax_call.js',
+                  partial: 'additionals/select2_ajax_call',
                   formats: [:js],
                   locals: { field_id: sanitize_to_id(name),
                             ajax_url: send("#{type}_path", project_id: options[:project], user_id: options[:user_id]),
@@ -212,16 +180,23 @@ module Additionals
 
     def project_list_css_classes(project, level)
       classes = [cycle('odd', 'even')]
-      classes += project.css_classes.split(' ')
+      classes += project.css_classes.split
       if level.positive?
         classes << 'idnt'
         classes << "idnt-#{level}"
       end
-      classes.join(' ')
+      classes.join ' '
     end
 
-    def addtionals_textarea_cols(text, options = {})
-      [[(options[:min].presence || 8), text.to_s.length / 50].max, (options[:max].presence || 20)].min
+    def addtionals_textarea_cols(text, min: 8, max: 20)
+      [[min, text.to_s.length / 50].max, max].min
+    end
+
+    def title_with_fontawesome(title, symbole, wrapper = 'span')
+      tag.send wrapper do
+        concat tag.i class: "#{symbole} for-fa-title", 'aria-hidden': 'true'
+        concat title
+      end
     end
 
     private
@@ -229,7 +204,7 @@ module Additionals
     def additionals_already_loaded(scope, js_name)
       locked = "#{js_name}.#{scope}"
       @alreaded_loaded = [] if @alreaded_loaded.nil?
-      return true if @alreaded_loaded.include?(locked)
+      return true if @alreaded_loaded.include? locked
 
       @alreaded_loaded << locked
       false
@@ -259,10 +234,6 @@ module Additionals
 
     def additionals_load_clipboardjs
       additionals_include_js 'clipboard.min'
-    end
-
-    def additionals_load_observe_field
-      additionals_include_js 'additionals_observe_field'
     end
 
     def additionals_load_font_awesome
@@ -307,21 +278,19 @@ module Additionals
       additionals_include_js 'd3plus-network.full.min'
     end
 
-    def user_with_avatar(user, options = {})
+    def user_with_avatar(user, no_link: false, css_class: 'additionals-avatar', size: 14)
       return if user.nil?
 
       if user.type == 'Group'
-        if options[:no_link] || !Redmine::Plugin.installed?('redmine_hrm')
+        if no_link || !Redmine::Plugin.installed?('redmine_hrm')
           user.name
         else
           link_to_hrm_group user
         end
       else
-        options[:size] = 14 if options[:size].nil?
-        options[:class] = 'additionals-avatar' if options[:class].nil?
         s = []
-        s << avatar(user, options)
-        s << if options[:no_link]
+        s << avatar(user, { size: size, class: css_class })
+        s << if no_link
                user.name
              else
                link_to_user user
@@ -336,10 +305,10 @@ module Additionals
                            l(:label_app_menu) => 'app' }, active)
     end
 
-    def human_float_number(value, options = {})
+    def human_float_number(value, precision: 2, separator: '.')
       ActionController::Base.helpers.number_with_precision(value,
-                                                           precision: options[:precision].presence || 2,
-                                                           separator: options[:separator].presence || '.',
+                                                           precision: precision,
+                                                           separator: separator,
                                                            strip_insignificant_zeros: true)
     end
 

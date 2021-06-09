@@ -1,4 +1,6 @@
-require File.expand_path('../../../test_helper', __FILE__)
+# frozen_string_literal: true
+
+require File.expand_path '../../../test_helper', __FILE__
 
 class GlobalHelperTest < ActionView::TestCase
   include Additionals::Helpers
@@ -22,19 +24,8 @@ class GlobalHelperTest < ActionView::TestCase
 
   def setup
     super
-    set_language_if_valid('en')
+    set_language_if_valid 'en'
     User.current = nil
-  end
-
-  def test_system_info
-    text = system_info
-
-    assert_not_equal '', text
-    assert_not_equal 'unknown', text
-  end
-
-  def test_windows_platform
-    assert_nil windows_platform?
   end
 
   def test_user_with_avatar
@@ -44,16 +35,16 @@ class GlobalHelperTest < ActionView::TestCase
   end
 
   def test_font_awesome_icon
-    html = font_awesome_icon('fas_cloud-upload-alt', class: 'test')
+    html = font_awesome_icon 'fas_cloud-upload-alt', class: 'test'
     assert_include 'class="fas fa-cloud-upload-alt test"', html
 
-    html = font_awesome_icon('fab_xing', class: 'test')
+    html = font_awesome_icon 'fab_xing', class: 'test'
     assert_include 'class="fab fa-xing test"', html
 
-    html = font_awesome_icon('fas_cloud-upload-alt', pre_text: 'Testing')
+    html = font_awesome_icon 'fas_cloud-upload-alt', pre_text: 'Testing'
     assert_include 'Testing <span', html
 
-    html = font_awesome_icon('fas_cloud-upload-alt', post_text: 'Testing')
+    html = font_awesome_icon 'fas_cloud-upload-alt', post_text: 'Testing'
     assert_include '</span> Testing', html
   end
 
@@ -65,7 +56,7 @@ class GlobalHelperTest < ActionView::TestCase
     assert_equal({ issue_id: nil, comment_id: nil },
                  parse_issue_url('', nil))
     assert_equal({ issue_id: nil, comment_id: nil },
-                 parse_issue_url('http://localhost/issues/23', nil))
+                 parse_issue_url('http://localhost/issue/23', nil))
     assert_equal({ issue_id: '23', comment_id: nil },
                  parse_issue_url('http://redmine.local/issues/23', nil))
     assert_equal({ issue_id: '23', comment_id: 2 },
@@ -76,7 +67,7 @@ class GlobalHelperTest < ActionView::TestCase
 
   def test_render_issue_macro_link
     issue = Issue.generate!
-    issue.init_journal(User.first, 'Adding notes')
+    issue.init_journal User.first, 'Adding notes'
     issue.save
 
     stubs(:request).returns(stub('original_url' => 'http://redmine.local/issues/1#note-2'))

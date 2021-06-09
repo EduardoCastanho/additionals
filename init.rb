@@ -1,12 +1,13 @@
-raise "\n\033[31madditionals requires ruby 2.4 or newer. Please update your ruby version.\033[0m" if RUBY_VERSION < '2.4'
+# frozen_string_literal: true
 
 Redmine::Plugin.register :additionals do
   name 'Additionals'
   author 'AlphaNodes GmbH'
   description 'Customizing Redmine, providing wiki macros and act as a library/function provider for other Redmine plugins'
-  version '3.0.1-master'
+  version Additionals::VERSION
   author_url 'https://alphanodes.com/'
   url 'https://github.com/alphanodes/additionals'
+  directory __dir__
 
   default_settings = Additionals.load_settings
   5.times do |i|
@@ -15,7 +16,7 @@ Redmine::Plugin.register :additionals do
     default_settings["custom_menu#{i}_title"] = ''
   end
 
-  settings(default: default_settings, partial: 'additionals/settings/additionals')
+  settings default: default_settings, partial: 'additionals/settings/additionals'
 
   permission :show_hidden_roles_in_memberbox, {}
   permission :set_system_dashboards,
@@ -48,10 +49,6 @@ Redmine::Plugin.register :additionals do
   menu :admin_menu, :additionals, { controller: 'settings', action: 'plugin', id: 'additionals' }, caption: :label_additionals
 end
 
-Rails.configuration.to_prepare do
-  Additionals.setup
-end
-
 Rails.application.config.after_initialize do
   # @TODO: this should be moved to AdditionalsFontAwesome and use an instance of it
   FONTAWESOME_ICONS = { fab: AdditionalsFontAwesome.load_icons(:fab), # rubocop: disable Lint/ConstantDefinitionInBlock
@@ -61,5 +58,9 @@ end
 
 Rails.application.paths['app/overrides'] ||= []
 Dir.glob(Rails.root.join('plugins/*/app/overrides')).each do |dir|
-  Rails.application.paths['app/overrides'] << dir unless Rails.application.paths['app/overrides'].include?(dir)
+  Rails.application.paths['app/overrides'] << dir unless Rails.application.paths['app/overrides'].include? dir
+end
+
+Rails.configuration.to_prepare do
+  Additionals.setup
 end

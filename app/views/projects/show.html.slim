@@ -6,8 +6,7 @@
               edit_project_dashboard_path(@project, @dashboard),
               class: 'icon icon-edit'
 
-  -  unless Redmine::Plugin.installed? 'redmine_reporting'
-    = bookmark_link @project
+  = bookmark_link @project unless Redmine::Plugin.installed? 'redmine_reporting'
   = call_hook :view_project_contextual_links, project: @project
 
   - if @dashboard&.editable?
@@ -17,7 +16,7 @@
   = actions_dropdown do
     - if User.current.allowed_to? :add_subprojects, @project
       = link_to l(:label_subproject_new), new_project_path(parent_id: @project), class: 'icon icon-add'
-    - if User.current.allowed_to?(:close_project, @project)
+    - if User.current.allowed_to? :close_project, @project
       - if @project.active?
         = link_to l(:button_close),
                   close_project_path(@project),
@@ -38,6 +37,8 @@
                   data: { confirm: l(:text_are_you_sure) }, method: :post, class: 'icon icon-lock'
       = link_to l(:button_copy), copy_project_path(@project), class: 'icon icon-copy'
       = link_to l(:button_delete), project_path(@project), method: :delete, class: 'icon icon-del'
+    - elsif Redmine::VERSION.to_s >= '4.2' && @project.deletable?
+      = link_to l(:button_delete), project_path(@project), method: :delete, class: 'icon icon-del'
 
     - if User.current.allowed_to? :save_dashboards, @project
       = link_to l(:label_new_dashboard),
@@ -45,16 +46,13 @@
                 class: 'icon icon-add new-additionals-dashboard'
 
     - if @dashboard&.destroyable?
-      = delete_dashboard_link project_dashboard_path(@project, @dashboard),
-                              class: 'icon icon-del'
+      = delete_dashboard_link project_dashboard_path(@project, @dashboard)
 
     = sidebar_action_toggle @dashboard_sidebar, @dashboard, @project
-    - unless @dashboard_sidebar
-      = render_dashboard_actionlist @dashboard, @project
-
+    = render_dashboard_actionlist @dashboard, @project unless @dashboard_sidebar
     = call_hook :view_project_actions_dropdown, project: @project
 
-    - if User.current.allowed_to?(:edit_project, @project)
+    - if User.current.allowed_to? :edit_project, @project
       = link_to_if_authorized l(:label_settings),
                               { controller: 'projects', action: 'settings', id: @project },
                               class: 'icon icon-settings'
@@ -64,7 +62,7 @@ h2 = project_overview_name @project, @dashboard
 - unless @project.active?
   p.warning
     span.icon.icon-lock
-      = l(:text_project_closed)
+      = l :text_project_closed
 
 = render partial: 'common/dashboard', locals: { dashboard: @dashboard }
 

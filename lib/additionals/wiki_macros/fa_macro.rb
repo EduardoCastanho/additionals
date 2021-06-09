@@ -1,4 +1,5 @@
-# Font Awesome wiki macros
+# frozen_string_literal: true
+
 module Additionals
   module WikiMacros
     Redmine::WikiFormatting::Macros.register do
@@ -34,7 +35,7 @@ module Additionals
       DESCRIPTION
 
       macro :fa do |_obj, args|
-        args, options = extract_macro_options(args, :class, :title, :text, :size, :color, :link)
+        args, options = extract_macro_options args, :class, :title, :text, :size, :color, :link
         raise 'The correct usage is {{fa(<ICON>, class=CLASS, title=TITLE, text=TEXT, size=SIZE, color=COLOR)}}' if args.empty?
 
         values = args[0].split '_'
@@ -48,7 +49,7 @@ module Additionals
           classes << "fa-#{values[0]}"
         end
 
-        classes += options[:class].split(' ') if options[:class].present?
+        classes += options[:class].split if options[:class].present?
         classes << "fa-#{options[:size]}" if options[:size].present?
 
         content_options = { class: classes.uniq.join(' ') }
@@ -62,7 +63,7 @@ module Additionals
             tag.i text, content_options
           end
         else
-          tag.i text, content_options
+          tag.i text, **content_options
         end
       end
     end

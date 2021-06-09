@@ -1,4 +1,6 @@
-require File.expand_path('../../../test_helper', __FILE__)
+# frozen_string_literal: true
+
+require File.expand_path '../../../test_helper', __FILE__
 
 module ApiTest
   class IssuesTest < Redmine::ApiTest::Base
@@ -31,7 +33,7 @@ module ApiTest
     end
 
     test 'GET /issues/:id.xml with subtasks' do
-      issue = Issue.generate_with_descendants!(project_id: 1)
+      issue = Issue.generate_with_descendants! project_id: 1
       get "/issues/#{issue.id}.xml?include=children"
 
       assert_select 'issue id', text: issue.id.to_s do
@@ -55,7 +57,7 @@ module ApiTest
         </issue>
         XML
 
-        assert_difference('Issue.count') do
+        assert_difference 'Issue.count' do
           post '/issues.xml',
                params: payload,
                headers: { 'CONTENT_TYPE' => 'application/xml' }.merge(credentials('jsmith'))
@@ -66,7 +68,7 @@ module ApiTest
         assert_equal 'API test', issue.subject
 
         assert_response :created
-        assert_equal 'application/xml', @response.content_type
+        assert_equal 'application/xml', @response.media_type
         assert_select 'issue > id', text: issue.id.to_s
       end
     end
@@ -84,7 +86,7 @@ module ApiTest
         </issue>
         XML
 
-        assert_difference('Issue.count') do
+        assert_difference 'Issue.count' do
           post '/issues.xml',
                params: payload,
                headers: { 'CONTENT_TYPE' => 'application/xml' }.merge(credentials('jsmith'))
@@ -96,7 +98,7 @@ module ApiTest
         assert_equal 'API test', issue.subject
 
         assert_response :created
-        assert_equal 'application/xml', @response.content_type
+        assert_equal 'application/xml', @response.media_type
         assert_select 'issue > id', text: issue.id.to_s
       end
     end

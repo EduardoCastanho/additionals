@@ -32,15 +32,26 @@ Settings
 
 And the following options can be edited by users with administratios rights in the area **Settings**:
 
-* Activate the option ``Open external URLs`` in order to open those URLs in a new window or browser tab if someone wants to visit them.
-* Add "Go to top" link. If you have a lot of long pages, it is enabling users to easily return to the top of a page.
-* Activate the ``Legacy smileys support`` if you want to use the manual smiley code in your text (e.g. ``:)``). If you already use a plugin that supports Smileys this option should stay deactivated. For more info on Emoji-Browser support read http://caniemoji.com/. Have a look at the Emoji cheat sheet at https://www.webpagefx.com/tools/emoji-cheat-sheet for available Emoji-Codes.
-* ``Disable modules``, this feature will hide the selected modules in the project settings. Even if the module is enabled for use in the admin area it can not be selected by the project manager within the projects. Please note, if these modules already activated in existing projects, you will have to change and re-save the respective project settings first.
+Open external URLs
+  Activate the option ``Open external URLs`` in order to open those URLs in a new window or browser tab if someone wants to visit them.
+
+Go to top Link
+  Add "Go to top" link. If you have a lot of long pages, it is enabling users to easily return to the top of a page.
+
+Legacy smileys support
+  Activate the ``Legacy smileys support`` if you want to use the manual smiley code in your text (e.g. ``:)``). If you already use a plugin that supports Smileys this option should stay deactivated. For more info on Emoji-Browser support read http://caniemoji.com/. Have a look at the Emoji cheat sheet at https://www.webpagefx.com/tools/emoji-cheat-sheet for available Emoji-Codes.
+
+Disable modules
+  This feature will hide the selected modules in the project settings. Even if the module is enabled for use in the admin area it can not be selected by the project manager within the projects. Please note, if these modules already activated in existing projects, you will have to change and re-save the respective project settings first.
 
 
-.. note:: Please restart the application server, if you make changes to the external urls settings as well as if you activate the Smileys support.
+.. note::
+  Please restart the application server, if you make changes to the external urls settings as well as if you activate the Smileys support.
 
-.. note:: You can use the following manual smiley codes: :), =), :D, =D, :'(, :(, ;), :P, :O, :/, :S, :|, :X, :*, O:), >:), B), (!), (?), (v), (x), (/) and @}->-
+.. note::
+  You can use the following manual smiley codes: :), =), :D, =D, :'(, :(, ;), :P, :O, :/, :S, :|, :X, :*, O:), >:), B), (!), (?), (v), (x) and  (/)
+
+
 
 Wiki section
 ------------
@@ -206,16 +217,6 @@ In the **Settings** area of the menu tab there are the following functions avail
 
 * Enter a ``Custom help URL`` instead of linking to the help on Redmine.org. Make sure you restart your application server after your changes.
 * Remove ``My Page`` from top menu in order you don't want your users to use this page.
-
-Users section
--------------
-
-In case you want to use a SPAM protection for the user registration page you can activate a spam protection function in this area which is based on the honeypot strategy to provide a better user experience.
-We use the simple and flexible SPAM protection solution for Rails applications called ``invisible_captcha`` for it.
-
-In order to activate the checkbox ``SPAM protection for registration`` you must have enabled the registration process in your Redmine settings (Authentication - Self-registration). Otherwise it is not possible to use this function.
-
-.. note:: CAPTCHA is short for ``Completely Automated Public Turing test to tell Computers and Humans Apart``. It is a type of test to determine whether or not the user is human. The honeypot strategy is an alternative and fairly simple. It puts a field onto your form that humans won't fill out because they don't see it. Most spam bots search for forms, fill out every field and submit it. If the honeypot captcha field is filled out you know for sure it is a spam submission.
 
 
 Web APIs section
